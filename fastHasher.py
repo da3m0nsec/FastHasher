@@ -1,15 +1,35 @@
 import sys, requests, argparse, ipaddress, hashlib, re
 
+def is_url(string):
+    p = re.compile("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")
+    if (p.match(string)):
+        return string
+    else:
+        raise argparse.ArgumentTypeError("{} is an invalid url".format(string))
+        
+def is_port(value):
+    try:
+        valuei = int(value)
+        if valuei <= 0 and valuei > 65535:
+            raise argparse.ArgumentTypeError("{} is not a valid port (port must be between 1 and 65535)".format(value))
+        return value
+    except ValueError:
+        raise argparse.ArgumentTypeError("{} is not a valid port (port must be a number)".format(value))
 
 def main():
-    
     try:
         algs = ["MD5", "SHA1", "SHA256"]
         parser = argparse.ArgumentParser()
-        parser.add_argument("url")
-        parser.add_argument("-p", "--port", type=int, help="Port used to connect with URL (Default is 80)", default=80)
-        parser.add_argument("-a", "--alg", help="Hash Algorithm to be used (Default is SHA1)", type=str, choices=algs, default="SHA1")
+        parser.add_argument("url", type=is_url)
+        parser.add_argument("-p", "--port", type=is_port, help="Port used to connect with URL (Default is 80)", default=80)
+        parser.add_argument("-a", "--alg", help="Hash Algorithm to be used (Default is SHA1)", choices=algs, default="SHA1")
         args = parser.parse_args()
+        
+        url = args.url
+        alg = args.alg
+        port = args.port
+        
+        URL = "http://" + url + ":" + port
         
         url = args.url
         alg = args.alg
