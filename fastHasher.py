@@ -1,47 +1,19 @@
-import sys, requests, getopt, ipaddress, hashlib, re
+import sys, requests, argparse, ipaddress, hashlib, re
 
 
 def main():
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hu:a:p:")
         algs = ["MD5", "SHA1", "SHA256"]
-        url = ""
-        alg = ""
-        port = "80"
-
-        if not opts:
-            usage()
-            sys.exit(0)
-
-        for opt, arg in opts:
-            if opt == '-h':
-                usage()
-                sys.exit(0)
-
-        for opt, arg in opts:
-            if opt == '-u':
-                url = arg
-
-            if opt == '-p':
-                port = arg
-
-            if opt == '-a':
-                if arg not in algs:
-                    print ("Invalid algortihm, valid algorithms are: ")
-                    print (algs)
-                    sys.exit(3)
-                alg = arg
+        parser = argparse.ArgumentParser()
+        parser.add_argument("url")
+        parser.add_argument("-p", "--port", type=int, help="Port used to connect with URL (Default is 80)", default=80)
+        parser.add_argument("-a", "--alg", help="Hash Algorithm to be used (Default is SHA1)", type=str, choices=algs, default="SHA1")
+        args = parser.parse_args()
         
-        if not url:
-            print ("Please specify a host with the -u option")
-            sys.exit(4)
-        
-        if not alg:
-            print ("Please specify an algorith with the -a option")
-            print ("\nValid algorithms are:")
-            print (algs)
-            sys.exit(4)
+        url = args.url
+        alg = args.alg
+        port = args.port
         
         URL = "http://" + url + ":" + port
         print ("URL: " + URL)
@@ -69,11 +41,6 @@ def main():
         else:
             print ("Flag not found")
 
-    except getopt.GetoptError as err:
-        print (err)
-        usage ()
-        sys.exit(1)
-
     except KeyboardInterrupt:
         sys.exit(0)
     
@@ -90,11 +57,5 @@ def encrypt(msg,alg):
     if alg == 'SHA256':
         return hashlib.sha256(msg.encode('utf-8')).hexdigest()
 
-
-def usage():
-
-    print("Usage: python " + sys.argv[0] + " -u [HOST] -p [PORT=80] -a [ENCRYPTION ALGORITHM]")
-
-
 if __name__ == "__main__":
-    main()  
+    main()
